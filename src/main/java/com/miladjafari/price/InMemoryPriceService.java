@@ -77,13 +77,10 @@ public class InMemoryPriceService implements PriceService {
     @Override
     public void beginBatchTransaction() {
         String threadTransactionId = getThreadTransactionId();
-        if (hasThreadAnyTransaction()) {
-            logger.error(String.format("Thread %s has already a transaction", threadTransactionId));
-        } else {
-            transactions.put(threadTransactionId, new Transaction(threadTransactionId));
-            transactions.get(threadTransactionId).begin();
-            logger.info(String.format("The batch transaction has been created for [%s] thread", threadTransactionId));
-        }
+
+        transactions.putIfAbsent(threadTransactionId, new Transaction(threadTransactionId));
+        transactions.get(threadTransactionId).begin();
+        logger.info(String.format("The batch transaction has been created for [%s] thread", threadTransactionId));
     }
 
     /**
@@ -114,8 +111,6 @@ public class InMemoryPriceService implements PriceService {
             transaction.commit();
 
             logger.info(String.format("Transaction [%s] has been successfully committed", threadTransactionId));
-        } catch (Throwable exception) {
-            logger.error(String.format("Committing transaction for thread [%s] has been failed", threadTransactionId));
         } finally {
             lock.writeLock().unlock();
         }
@@ -136,10 +131,6 @@ public class InMemoryPriceService implements PriceService {
 
     private String getThreadTransactionId() {
         return Thread.currentThread().getName();
-    }
-
-    private boolean hasThreadAnyTransaction() {
-        return transactions.containsKey(getThreadTransactionId());
     }
 
     /**
