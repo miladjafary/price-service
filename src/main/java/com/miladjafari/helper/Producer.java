@@ -2,14 +2,22 @@ package com.miladjafari.helper;
 
 import com.miladjafari.price.PriceDto;
 import com.miladjafari.price.PriceService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Producer {
+    private static final Logger logger = LogManager.getLogger();
 
     private final PriceService priceService;
     private final Integer chunksOfRecords;
+
+    public Producer(PriceService priceService) {
+        this.priceService = priceService;
+        this.chunksOfRecords = 1000;
+    }
 
     public Producer(PriceService priceService, Integer chunksOfRecords) {
         this.priceService = priceService;
@@ -17,6 +25,7 @@ public class Producer {
     }
 
     public void uploadPrices(List<PriceDto> prices) {
+        logger.info("Number of prices to be imported: " + prices.size());
         priceService.beginBatchTransaction();
 
         List<List<PriceDto>> pricePartitions = partitionsThePrices(prices);
@@ -25,6 +34,8 @@ public class Producer {
         });
 
         priceService.commitBatchTransaction();
+
+        logger.info(priceService.findAllPrices().size() + " prices has been imported");
     }
 
 
@@ -35,7 +46,7 @@ public class Producer {
         }
 
         int fromIndex = 0;
-        int numberOfRecordsPerPartitions = prices.size() < chunksOfRecords ? partitions.size() : chunksOfRecords;
+        int numberOfRecordsPerPartitions = prices.size() < chunksOfRecords ? prices.size() : chunksOfRecords;
         int numberOfPartitions = prices.size() / numberOfRecordsPerPartitions;
         for (int i = 0; i < numberOfPartitions; i++) {
             int toIndex = fromIndex + numberOfRecordsPerPartitions;
