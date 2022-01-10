@@ -2,6 +2,7 @@ package com.miladjafari.price;
 
 
 import com.miladjafari.excpetion.TransactionException;
+import com.miladjafari.util.PriceTestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -9,7 +10,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -25,22 +25,7 @@ public class InMemoryPriceServiceTest {
     @BeforeEach
     public void before() {
         priceService = new InMemoryPriceService();
-        mockPrices = createMockPriceLists();
-    }
-
-    private List<PriceDto> createMockPriceLists() {
-        Random randomPrice = new Random();
-        List<PriceDto> prices = new ArrayList<>();
-
-        for (long step = 0; step < 10; step++) {
-            prices.add(new PriceDto(
-                    UUID.randomUUID().toString(),
-                    LocalDateTime.now().plusMinutes(step),
-                    randomPrice.nextDouble())
-            );
-        }
-
-        return prices;
+        mockPrices = PriceTestUtils.createMockPriceLists();
     }
 
     @Test
