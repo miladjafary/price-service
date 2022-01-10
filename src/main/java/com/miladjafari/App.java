@@ -24,7 +24,6 @@ public class App {
     public static void main(String[] args) throws InterruptedException {
         PriceService priceService = new InMemoryPriceService();
 
-
         List<PriceDto> pricesForProducer1 = createPriceLists(200);
         Runnable producer1 = () -> {
             Producer producer = new Producer(priceService);
